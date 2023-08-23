@@ -89,6 +89,16 @@ class InputWrapper:
         assert args or kwargs or True
         return self.call()
 
+    def __len__(self) -> int:
+        """Возвращает количество имеющихся данных
+
+        Args:
+
+        Returns:
+            int: Количество имеющихся данных
+        """
+        return len(self.data)
+
 
 class PrintWrapper:
     """Обертка для print() - вместо вывода данных в sys.stdout сохраняет их
@@ -152,3 +162,13 @@ class PrintWrapper:
             None:
         """
         return self.call(*args, **kwargs)
+
+    def __len__(self) -> int:
+        """Возвращает количество имеющихся данных
+
+        Args:
+
+        Returns:
+            int: Количество имеющихся данных
+        """
+        return len(self.data)
