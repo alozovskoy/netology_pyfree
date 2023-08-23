@@ -94,8 +94,9 @@ class PrintWrapper:
     внутри экземпляра
     """
 
+    _real_print = print
+
     def __init__(self) -> None:
-        self.real_print = print
         self._data: typing.List[str] = []
 
     @property
@@ -132,7 +133,7 @@ class PrintWrapper:
         buffer = io.StringIO()
         sys.stdout = buffer
 
-        self.real_print(*args, **kwargs)
+        self._real_print(*args, **kwargs)
 
         print_output = buffer.getvalue()
         sys.stdout = sys.__stdout__
