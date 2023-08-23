@@ -23,7 +23,7 @@ class InputWrapper:
         self._data: typing.List[typing.Any] = []
 
         if data:
-            self._data.extend(data)
+            self += data
 
     @property
     def data(self) -> typing.Tuple[typing.Any, ...]:
