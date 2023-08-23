@@ -106,6 +106,26 @@ class TestInput(unittest.TestCase):
 
         self.assertEqual(data, expected_result)
 
+    def test_len(self) -> None:
+        """Проверка возвращаемого количества данных
+
+        Args:
+
+        Returns:
+            None:
+        """
+
+        self.input_.clean()
+        self.input_ += ["foo", "bar"]
+
+        self.assertEqual(len(self.input_), 2)
+
+        input("Забираем одно значение")
+        self.assertEqual(len(self.input_), 1)
+
+        self.input_.clean()
+        self.assertEqual(len(self.input_), 0)
+
 
 class TestPrint(unittest.TestCase):
     """Тестирование wrapper'а для print()"""
@@ -204,6 +224,26 @@ class TestPrint(unittest.TestCase):
             print(raw_result, end=end)
 
         self.assertEqual(self.print_.data, expected_results)
+
+    def test_len(self) -> None:
+        """Проверка возвращаемого количества данных
+
+        Args:
+
+        Returns:
+            None:
+        """
+
+        self.print_.clean()
+
+        print("Добавляем значение")
+        self.assertEqual(len(self.print_), 1)
+
+        print("Добавляем еще одно значение")
+        self.assertEqual(len(self.print_), 2)
+
+        self.print_.clean()
+        self.assertEqual(len(self.print_), 0)
 
 
 if __name__ == "__main__":
