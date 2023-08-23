@@ -4,8 +4,8 @@ import typing
 
 
 class InputWrapper:
-    """Обертка для input() - при каждом вызове возвращает один из ранее
-    переданных объектов (FIFO).
+    """Обертка для input() - при каждом вызове возвращает строковое
+    представление один из ранее переданных объектов (FIFO).
     """
 
     def __init__(
@@ -20,24 +20,25 @@ class InputWrapper:
         Returns:
             None:
         """
-        self._data: typing.List[typing.Any] = []
+        self._data: typing.List[str] = []
 
         if data:
             self += data
 
     @property
-    def data(self) -> typing.Tuple[typing.Any, ...]:
+    def data(self) -> typing.Tuple[str, ...]:
         """Данные, которые доступны на данный момент в экземпляре
 
         Args:
 
         Returns:
-            typing.Tuple[typing.Any, ...]: Кортеж с данными
+            typing.Tuple[str, ...]: Кортеж с данными
         """
         return tuple(self._data)
 
     def __iadd__(self, other: typing.Iterable[typing.Any]) -> "InputWrapper":
-        """Расширяет список данных объекта элементами переданного перечисления
+        """Расширяет список данных объекта элементами переданного перечисления.
+        Объекты приводятся к строковому типу.
 
         Args:
             other (typing.Iterable[typing.Any]): Перечисляемый тип с данными,
@@ -46,7 +47,7 @@ class InputWrapper:
         Returns:
             "InputWrapper": Экземпляр объекта с добавленными данными
         """
-        self._data.extend(other)
+        self._data.extend(map(str, other))
         return self
 
     def clean(self) -> None:
@@ -59,7 +60,7 @@ class InputWrapper:
         """
         self._data = []
 
-    def call(self, *args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+    def call(self, *args: typing.Any, **kwargs: typing.Any) -> str:
         """Вернуть один объект данных из доступных (FIFO)
 
         Args:
@@ -67,7 +68,7 @@ class InputWrapper:
             kwargs (typing.Any): Игнорируется
 
         Returns:
-            typing.Any: Объект данных, ранее переданных в экземпляр
+            str: Объект данных, ранее переданных в экземпляр
         """
         assert args or kwargs or True
         try:
@@ -75,7 +76,7 @@ class InputWrapper:
         except IndexError:
             raise ValueError("Не осталось данных")
 
-    def __call__(self, *args: typing.Any, **kwargs: typing.Any) -> typing.Any:
+    def __call__(self, *args: typing.Any, **kwargs: typing.Any) -> str:
         """Вернуть один объект данных из доступных (FIFO)
 
         Args:
@@ -83,7 +84,7 @@ class InputWrapper:
             kwargs (typing.Any): Игнорируется
 
         Returns:
-            typing.Any: Объект данных, ранее переданных в экземпляр
+            str: Объект данных, ранее переданных в экземпляр
         """
         assert args or kwargs or True
         return self.call()
