@@ -107,5 +107,104 @@ class TestInput(unittest.TestCase):
         self.assertEqual(data, expected_result)
 
 
+class TestPrint(unittest.TestCase):
+    """Тестирование wrapper'а для print()"""
+
+    def setUp(self) -> None:
+        self.print_ = misc.PrintWrapper()
+
+        self.patches: typing.List[unittest.mock._patch] = [  # type: ignore
+            unittest.mock.patch("builtins.print", self.print_),
+        ]
+
+        for patch in self.patches:
+            patch.start()
+            self.addCleanup(patch.stop)
+
+    def test_simple(self) -> None:
+        """Тестирование простого вызова
+
+        Args:
+
+        Returns:
+            None:
+        """
+        raw_result = "foobar"
+        expected_result = f"{raw_result}\n"
+
+        self.print_.clean()
+
+        print(raw_result)
+
+        self.assertEqual(len(self.print_.data), 1)
+        self.assertEqual(self.print_.data[0], expected_result)
+
+    def test_multiple(self) -> None:
+        """Тестирование нескольких вызовов
+
+        Args:
+
+        Returns:
+            None:
+        """
+        raw_results = ("foo", "bar")
+        expected_results = tuple(f"{i}\n" for i in raw_results)
+
+        self.print_.clean()
+
+        for i in raw_results:
+            print(i)
+
+        self.assertEqual(len(self.print_.data), 2)
+        self.assertEqual(self.print_.data, expected_results)
+
+    def test_sep(self) -> None:
+        """Тестирование разделителей
+
+        Args:
+
+        Returns:
+            None:
+        """
+        raw_results = ("foo", "bar")
+
+        expected_results = (
+            " ".join(raw_results) + "\n",
+            "-".join(raw_results) + "\n",
+            "\t".join(raw_results) + "\n",
+        )
+
+        self.print_.clean()
+
+        print(*raw_results)
+        print(*raw_results, sep="-")
+        print(*raw_results, sep="\t")
+
+        self.assertEqual(self.print_.data, expected_results)
+
+    def test_end(self, end: typing.Optional[str] = None) -> None:
+        """Тестирование окончаний строк
+
+        Args:
+
+        Returns:
+            None:
+        """
+
+        raw_result = "foobar"
+
+        raw_ends = (None, "", " ", "\t")
+        exp_ends = ("\n", "", " ", "\t")
+
+        expected_results = tuple(f"{raw_result}{end}" for end in exp_ends)
+
+        self.print_.clean()
+
+        for end in raw_ends:
+            print(raw_result, end=end)
+
+        self.assertEqual(self.print_.data, expected_results)
+
+
 if __name__ == "__main__":
     unittest.main()
