@@ -33,7 +33,7 @@ def task1(token: str) -> None:
     HELP = "\n".join(
         [
             "Список доступных команд:",
-            "\t* print  - напечать все задачи на заданную дату",
+            "\t* show  - напечать все задачи на заданную дату",
             "\t* todo - добавить задачу",
             "\t* random - добавить на сегодня случайную задачу",
             "\t* help - Напечатать help",
@@ -69,7 +69,7 @@ def task1(token: str) -> None:
         )
 
     @bot.message_handler(commands=["show"])
-    def print_(message):
+    def show(message):
         date = message.text.split()[1].lower()
         if date in todos:
             tasks = ""
