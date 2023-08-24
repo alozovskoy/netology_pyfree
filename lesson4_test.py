@@ -1,7 +1,6 @@
 import typing
 import unittest
 import unittest.mock
-import uuid
 
 import lesson4
 import misc
