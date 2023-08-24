@@ -23,7 +23,7 @@ def task1(token: str, username: str) -> None:
     def echo(message):
         text = message.text
 
-        if username in text:
+        if username.lower() in map(str.lower, text.split()):
             text = "Ба! Знакомые все лица!"
 
         bot.send_message(message.chat.id, text)
