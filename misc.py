@@ -333,10 +333,12 @@ class TelegramBot:
                 function = self._command_to_function_mappings.get(
                     command.removeprefix("/")
                 )
-            else:
-                function = self._content_type_to_function_mappings.get(
-                    message.content_type
-                )
+                if function:
+                    function(message)
+                    continue
+
+            function = self._content_type_to_function_mappings.get(
+                message.content_type
+            )
             if function:
                 function(message)
-                continue
