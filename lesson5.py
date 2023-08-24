@@ -1,4 +1,5 @@
 import random
+import sys
 
 import telebot
 
@@ -77,3 +78,10 @@ def task1(token: str) -> None:
         bot.send_message(message.chat.id, tasks)
 
     bot.polling(none_stop=True)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print(f"Usage: {sys.argv[0]} <BOT_TOKEN>")
+    else:
+        task1(token=sys.argv[1])
