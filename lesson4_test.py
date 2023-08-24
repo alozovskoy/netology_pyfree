@@ -19,7 +19,7 @@ class TestLesson4Task1(unittest.TestCase):
             ),
         )
 
-        self.bot = misc.TelegramBot(messages_to_bot=messages)
+        self.bot = misc.TelegramBot(messages_to_bot=self.messages)
 
         self.patches: typing.List[unittest.mock._patch] = [  # type: ignore
             unittest.mock.patch("telebot.TeleBot", self.bot),
