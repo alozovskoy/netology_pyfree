@@ -30,12 +30,21 @@ class TestLesson4Task1(unittest.TestCase):
         lesson4.task1(token="", username=username)
 
     def test_responses(self) -> None:
+        # проверяем что были ответы на все сообщения
         self.assertEqual(len(self.bot.messages_from_bot), len(self.messages))
+
+        # проверяем ответ на "/start"
         self.assertEqual(self.bot.messages_from_bot[0].text, "/start")
+
+        # проверяем ответ на "test"
         self.assertEqual(self.bot.messages_from_bot[1].text, "test")
+
+        # проверяем ответ на "Проверка кириллицы"
         self.assertEqual(
             self.bot.messages_from_bot[2].text, "Проверка кириллицы"
         )
+
+        # проверяем ответ на строку с именем
         self.assertEqual(
             self.bot.messages_from_bot[3].text, "Ба! Знакомые все лица!"
         )
