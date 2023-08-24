@@ -8,13 +8,15 @@ import misc
 
 class TestLesson4Task1(unittest.TestCase):
     def setUp(self) -> None:
-        username: typing.Final[str] = "Вася"
+        self.username: typing.Final[str] = "Вася"  # type: ignore
 
         self.messages: typing.Tuple[misc.TelegramBot.TelegramMessage, ...] = (
             misc.TelegramBot.TelegramMessage(text="/start"),
             misc.TelegramBot.TelegramMessage(text="test"),
             misc.TelegramBot.TelegramMessage(text="Проверка кириллицы"),
-            misc.TelegramBot.TelegramMessage(text=f"Меня зовут {username}"),
+            misc.TelegramBot.TelegramMessage(
+                text=f"Меня зовут {self.username}"
+            ),
         )
 
         self.bot = misc.TelegramBot(messages_to_bot=messages)
@@ -27,7 +29,7 @@ class TestLesson4Task1(unittest.TestCase):
             patch.start()
             self.addCleanup(patch.stop)
 
-        lesson4.task1(token="", username=username)
+        lesson4.task1(token="", username=self.username)
 
     def test_responses(self) -> None:
         # проверяем что были ответы на все сообщения
