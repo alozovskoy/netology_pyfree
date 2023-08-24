@@ -207,7 +207,10 @@ class TelegramBot:
         """
 
         # Связь функций-обработчиков сообщений с content_type
-        self._functions_mappings: typing.Dict[
+        self._content_type_to_function_mappings: typing.Dict[
+            str, typing.Callable[[TelegramBot.TelegramMessage], None]
+        ] = {}
+        self._command_to_function_mappings: typing.Dict[
             str, typing.Callable[[TelegramBot.TelegramMessage], None]
         ] = {}
 
@@ -244,7 +247,8 @@ class TelegramBot:
     def message_handler(
         self,
         *args: typing.Any,
-        content_types: typing.List[str],
+        content_types: typing.Optional[typing.List[str]] = None,
+        commands: typing.Optional[typing.List[str]] = None,
         **kwargs: typing.Any
     ) -> typing.Callable[[typing.Callable[[TelegramMessage], None]], None]:
         """Декоратор для обработчика сообщений - сохраняет переданную функцию
@@ -252,8 +256,10 @@ class TelegramBot:
 
         Args:
             args: Игнорируется
-            content_types (typing.List[str]): coontent_type'ы, к которым
-                следует привязать декорируемую функцию
+            content_types (typing.Optional[typing.List[str]]): coontent_type'ы,
+                к которым следует привязать декорируемую функцию
+            commands (typing.Optional[typing.List[str]]): команды, к которым
+                следует привязывать функцию
             kwargs: Игнорируется
 
         Returns:
@@ -263,11 +269,31 @@ class TelegramBot:
         """
         assert args or kwargs or True
 
+        if not content_types and not commands:
+            raise ValueError(
+                (
+                    "Требуется передать или список команд ('commands'), или "
+                    "список 'content_types', к которым следует привязывать "
+                    "команды"
+                )
+            )
+
+        if content_types is None:
+            content_types = []
+
+        if commands is None:
+            commands = []
+
         def wrapper(
             function: typing.Callable[[TelegramBot.TelegramMessage], None]
         ) -> None:
             for content_type in content_types:
-                self._functions_mappings[content_type] = function
+                self._content_type_to_function_mappings[
+                    content_type
+                ] = function
+
+            for command in commands:
+                self._command_to_function_mappings[command] = function
 
         return wrapper
 
@@ -301,4 +327,16 @@ class TelegramBot:
         """
         assert args or kwargs or True
         for message in self._messages_to_bot:
-            self._functions_mappings[message.content_type](message)
+            command = message.text.split(maxsplit=1)[0]
+
+            if command.startswith("/"):
+                function = self._command_to_function_mappings.get(
+                    command.removeprefix("/")
+                )
+            else:
+                function = self._content_type_to_function_mappings.get(
+                    message.content_type
+                )
+            if function:
+                function(message)
+                continue
