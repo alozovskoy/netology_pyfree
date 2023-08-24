@@ -10,7 +10,7 @@ class TestLesson4Task1(unittest.TestCase):
     def setUp(self) -> None:
         username: typing.Final[str] = "Вася"
 
-        messages: typing.Tuple[misc.TelegramBot.TelegramMessage, ...] = (
+        self.messages: typing.Tuple[misc.TelegramBot.TelegramMessage, ...] = (
             misc.TelegramBot.TelegramMessage(text="/start"),
             misc.TelegramBot.TelegramMessage(text="test"),
             misc.TelegramBot.TelegramMessage(text="Проверка кириллицы"),
@@ -30,7 +30,7 @@ class TestLesson4Task1(unittest.TestCase):
         lesson4.task1(token="", username=username)
 
     def test_responses(self) -> None:
-        self.assertEqual(len(self.bot.messages_from_bot), 4)
+        self.assertEqual(len(self.bot.messages_from_bot), len(self.messages))
         self.assertEqual(self.bot.messages_from_bot[0].text, "/start")
         self.assertEqual(self.bot.messages_from_bot[1].text, "test")
         self.assertEqual(
