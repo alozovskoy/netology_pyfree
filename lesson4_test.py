@@ -17,6 +17,10 @@ class TestLesson4Task1(unittest.TestCase):
             misc.TelegramBot.TelegramMessage(
                 text=f"Меня зовут {self.username}"
             ),
+            misc.TelegramBot.TelegramMessage(
+                text=f"Меня зовут {self.username.upper()}"
+            ),
+            misc.TelegramBot.TelegramMessage(text=f"Менязовут{self.username}"),
         )
 
         self.bot = misc.TelegramBot(messages_to_bot=self.messages)
@@ -49,6 +53,16 @@ class TestLesson4Task1(unittest.TestCase):
         # проверяем ответ на строку с именем
         self.assertEqual(
             self.bot.messages_from_bot[3].text, "Ба! Знакомые все лица!"
+        )
+
+        # проверяем регистрозависимость - строка с именем в верхнем регистре
+        self.assertEqual(
+            self.bot.messages_from_bot[4].text, "Ба! Знакомые все лица!"
+        )
+
+        # проверяем что поиск идет по словам а не по подстроке
+        self.assertEqual(
+            self.bot.messages_from_bot[5].text, f"Менязовут{self.username}"
         )
 
 
