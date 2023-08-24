@@ -1,3 +1,4 @@
+import dataclasses
 import io
 import sys
 import typing
@@ -172,3 +173,132 @@ class PrintWrapper:
             int: Количество имеющихся данных
         """
         return len(self.data)
+
+
+class TelegramBot:
+    @dataclasses.dataclass
+    class TelegramChat:
+        id: int = 0
+
+    @dataclasses.dataclass
+    class TelegramMessage:
+        text: str
+        content_type: str = "text"
+        chat: "TelegramBot.TelegramChat" = dataclasses.field(
+            default_factory=lambda: TelegramBot.TelegramChat()
+        )
+
+    @dataclasses.dataclass
+    class SendedMessage:
+        chat_id: int
+        text: str
+
+    def __init__(
+        self, messages_to_bot: typing.Iterable[TelegramMessage]
+    ) -> None:
+        """Создание и наполнение необходимых структур
+
+        Args:
+            messages_to_bot (typing.List[TelegramMessage]): Список "сообщений",
+                которые нужно "отправить" в бот
+
+        Returns:
+            None:
+        """
+
+        # Связь функций-обработчиков сообщений с content_type
+        self._functions_mappings: typing.Dict[
+            str, typing.Callable[[TelegramBot.TelegramMessage], None]
+        ] = {}
+
+        # Сообщения, которые нужно "отправить" боту
+        self._messages_to_bot: typing.List[TelegramBot.TelegramMessage] = list(
+            messages_to_bot
+        )
+
+        # Сообщения, которые "отправляет" бот в ответ
+        self._messages_from_bot: typing.List[TelegramBot.SendedMessage] = []
+
+    @property
+    def messages_from_bot(
+        self,
+    ) -> typing.Tuple["TelegramBot.SendedMessage", ...]:
+        return tuple(self._messages_from_bot)
+
+    def __call__(
+        self, *args: typing.Any, **kwargs: typing.Any
+    ) -> "TelegramBot":
+        """Иммитация инициализации - в качестве мока будет использоваться
+        инстанс класса, который в коде будут пытаться "инициализировать"
+
+        Args:
+            args (typing.Any): Игнорируется
+            kwargs (typing.Any): Игнорируется
+
+        Returns:
+            "TelegramBot": Инстанс мока бота
+        """
+        assert args or kwargs or True
+        return self
+
+    def message_handler(
+        self,
+        *args: typing.Any,
+        content_types: typing.List[str],
+        **kwargs: typing.Any
+    ) -> typing.Callable[[typing.Callable[[TelegramMessage], None]], None]:
+        """Декоратор для обработчика сообщений - сохраняет переданную функцию
+        обработки сообщения со связанным content_type входящего сообщения
+
+        Args:
+            args: Игнорируется
+            content_types (typing.List[str]): coontent_type'ы, к которым
+                следует привязать декорируемую функцию
+            kwargs: Игнорируется
+
+        Returns:
+            typing.Callable[[typing.Callable[[TelegramMessage], None]], None]:
+                Враппер для функции обработчика сообщений с указанным
+                content_type
+        """
+        assert args or kwargs or True
+
+        def wrapper(
+            function: typing.Callable[[TelegramBot.TelegramMessage], None]
+        ) -> None:
+            for content_type in content_types:
+                self._functions_mappings[content_type] = function
+
+        return wrapper
+
+    def send_message(self, chat_id: int, text: str) -> None:
+        """Иммитация отправки сообщения - сообщение складывается в список
+        отправленных сообщений инстанса
+
+        Args:
+            chat_id (int): ID чата в телеграм
+            text (str): Текст сообщения
+
+        Returns:
+            None:
+        """
+        self._messages_from_bot.append(
+            self.SendedMessage(chat_id=chat_id, text=text)
+        )
+
+    def polling(self, *args: typing.Any, **kwargs: typing.Any) -> None:
+        """В библиотеке эта функция запускает бота - он подключается к серверу
+        и начинает принимать и отправлять сообщения. В нашей иммитации
+        сообщения из наполненного при инициализации списка передаются в
+        функции, связанные с соответствующим content_type
+
+        Args:
+            args: Игнорируется
+            kwargs: Игнорируется
+
+        Returns:
+            None:
+        """
+        assert args or kwargs or True
+        for message in self._messages_to_bot:
+            self._functions_mappings[message.content_type](message)
