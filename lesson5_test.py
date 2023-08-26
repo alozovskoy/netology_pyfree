@@ -68,15 +68,15 @@ class TestLesson5Task1(unittest.TestCase):
     def test_add(self) -> None:
         """Проверка ответов для команды /add"""
 
-        answers = self.run_bot_requests(
-            [
-                "/add сегодня тестовая задача",
-                "/add сегодня A",
-                "/add сегодня",
-            ]
-        )
+        messages = [
+            "/add сегодня тестовая задача",
+            "/add сегодня A",
+            "/add сегодня",
+        ]
 
-        self.assertEqual(len(answers), 3)
+        answers = self.run_bot_requests(messages)
+
+        self.assertEqual(len(answers), len(messages))
         self.assertEqual(
             answers[0].text,
             "Задача тестовая задача добавлена на дату сегодня",
@@ -93,18 +93,17 @@ class TestLesson5Task1(unittest.TestCase):
     def test_show(self) -> None:
         """Проверка ответов для команды /show"""
 
-        answers = self.run_bot_requests(
-            [
-                "/add сегодня тестовая задача",
-                "/add завтра завтрашняя тестовая задача",
-                "/show сегодня",
-                "/show сегодня завтра",
-                "/show такой_даты_нет",
-                "/show",
-            ]
-        )
+        messages = [
+            "/add сегодня тестовая задача",
+            "/add завтра завтрашняя тестовая задача",
+            "/show сегодня",
+            "/show сегодня завтра",
+            "/show такой_даты_нет",
+            "/show",
+        ]
+        answers = self.run_bot_requests(messages)
 
-        self.assertEqual(len(answers), 6)
+        self.assertEqual(len(answers), len(messages))
 
         self.assertEqual(
             answers[2].text.splitlines()[-1], "[ ] тестовая задача"
