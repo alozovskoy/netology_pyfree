@@ -96,30 +96,36 @@ class TestLesson5Task1(unittest.TestCase):
         messages = [
             "/add сегодня тестовая задача",
             "/add завтра завтрашняя тестовая задача",
+            "/add вчера тестовая задача @тестовая категория",
             "/show сегодня",
             "/show сегодня завтра",
             "/show такой_даты_нет",
             "/show",
+            "/show вчера",
         ]
         answers = self.run_bot_requests(messages)
 
         self.assertEqual(len(answers), len(messages))
 
         self.assertEqual(
-            answers[2].text.splitlines()[-1], "[ ] тестовая задача"
+            answers[3].text.splitlines()[-1], "[ ] тестовая задача"
         )
         self.assertEqual(
-            answers[3].text.splitlines(),
+            answers[4].text.splitlines(),
             [
                 "[ ] тестовая задача",
                 "[ ] завтрашняя тестовая задача",
             ],
         )
 
-        self.assertEqual(answers[4].text.splitlines()[-1], "Такой даты нет")
+        self.assertEqual(answers[5].text.splitlines()[-1], "Такой даты нет")
         self.assertEqual(
-            answers[5].text.splitlines()[-1],
+            answers[6].text.splitlines()[-1],
             "Необходимо передать как минимум одну дату",
+        )
+        self.assertEqual(
+            answers[7].text.splitlines()[-1],
+            "[ ] тестовая задача @тестовая категория",
         )
 
 

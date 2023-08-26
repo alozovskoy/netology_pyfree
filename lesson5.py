@@ -1,3 +1,4 @@
+import dataclasses
 import random
 import sys
 
@@ -28,7 +29,12 @@ def task1(token: str) -> None:
         "Посмотреть 4 сезон Рик и Морти",
     ]
 
-    todos = dict()
+    @dataclasses.dataclass
+    class TodoTask:
+        task: str
+        category: typing.Optional[str] = None
+
+    todos: typing.Dict[str, typing.List[TodoTask]] = dict()
 
     HELP = "\n".join(
         [
@@ -40,12 +46,26 @@ def task1(token: str) -> None:
         ]
     )
 
-    def add_todo(date, task):
+    def add_todo(
+        date: str, task: str, category: typing.Optional[str] = None
+    ) -> None:
+        """Добавить задачу в список дел
+
+        Args:
+            date (str): Дата, когда необходимо выполнять задачу
+            task (str): Задача
+            category (typing.Optional[str]): Категория
+
+        Returns:
+            None:
+        """
+
         date = date.lower()
-        if todos.get(date) is not None:
-            todos[date].append(task)
-        else:
-            todos[date] = [task]
+
+        if date not in todos:
+            todos[date] = []
+
+        todos[date].append(TodoTask(task=task, category=category))
 
     @bot.message_handler(commands=["help"])
     def help(message):
@@ -62,12 +82,10 @@ def task1(token: str) -> None:
     @bot.message_handler(commands=["add"])
     def add(message):
         try:
-            _, date, tail = message.text.split(maxsplit=2)
+            _, date, task = message.text.split(maxsplit=2)
         except ValueError:
             bot.send_message(message.chat.id, "Команда составлена некорректно")
             return
-
-        task = " ".join([tail])
 
         if len(task) < 3:
             bot.send_message(
@@ -75,7 +93,15 @@ def task1(token: str) -> None:
             )
             return
 
-        add_todo(date, task)
+        if " @" in task:
+            try:
+                task, category = task.split(" @")
+            except ValueError:
+                category = None
+        else:
+            category = None
+
+        add_todo(date, task, category)
         bot.send_message(
             message.chat.id, f"Задача {task} добавлена на дату {date}"
         )
@@ -94,7 +120,10 @@ def task1(token: str) -> None:
         for date in dates:
             if date in todos:
                 for task in todos[date]:
-                    tasks.append(f"[ ] {task}")
+                    _task = f"[ ] {task.task}"
+                    if task.category:
+                        _task += f" @{task.category}"
+                    tasks.append(_task)
 
         if tasks:
             tasks = "\n".join(tasks)
