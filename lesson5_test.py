@@ -1,5 +1,4 @@
 import dataclasses
-import textwrap
 import typing
 import unittest
 import unittest.mock
@@ -16,38 +15,7 @@ class MessageWithOptionalAnswer:
 
 class TestLesson5Task1(unittest.TestCase):
     def setUp(self) -> None:
-        self.messages: typing.Tuple[MessageWithOptionalAnswer, ...] = (
-            MessageWithOptionalAnswer(
-                message=misc.TelegramBot.TelegramMessage(text="/start"),
-                is_answer=False,
-            ),
-            MessageWithOptionalAnswer(
-                message=misc.TelegramBot.TelegramMessage(text="/help"),
-                is_answer=True,
-            ),
-            MessageWithOptionalAnswer(
-                message=misc.TelegramBot.TelegramMessage(text="/random"),
-                is_answer=True,
-            ),
-            MessageWithOptionalAnswer(
-                message=misc.TelegramBot.TelegramMessage(
-                    text="/add сегодня тестовая задача"
-                ),
-                is_answer=True,
-            ),
-            MessageWithOptionalAnswer(
-                message=misc.TelegramBot.TelegramMessage(text="/show сегодня"),
-                is_answer=True,
-            ),
-            MessageWithOptionalAnswer(
-                message=misc.TelegramBot.TelegramMessage(text="/show завтра"),
-                is_answer=True,
-            ),
-        )
-
-        self.bot = misc.TelegramBot(
-            messages_to_bot=[i.message for i in self.messages]
-        )
+        self.bot = misc.TelegramBot()
 
         self.patches: typing.List[unittest.mock._patch] = [  # type: ignore
             unittest.mock.patch("telebot.TeleBot", self.bot),
@@ -57,15 +25,17 @@ class TestLesson5Task1(unittest.TestCase):
             patch.start()
             self.addCleanup(patch.stop)
 
+    def run_bot_requests(
+        self, messages: typing.Iterable[str]
+    ) -> typing.Tuple[misc.TelegramBot.SendedMessage, ...]:
+        self.bot.messages_to_bot = [
+            misc.TelegramBot.TelegramMessage(text=i) for i in messages
+        ]
+        self.bot.clear_messages_from_bot()
+
         lesson5.task1(token="")
 
-    def test_responses_count(self) -> None:
-        """Проверяем что были ответы на все сообщения, на которые ожидался \
-ответ"""
-        self.assertEqual(
-            len(self.bot.messages_from_bot),
-            len(list(filter(lambda x: x.is_answer, self.messages))),
-        )
+        return self.bot.messages_from_bot
 
     def test_help_command(self) -> None:
         """Проверка ответов для команды /help"""
@@ -79,52 +49,51 @@ class TestLesson5Task1(unittest.TestCase):
                 "\t* help - Напечатать help",
             ]
         )
-        self.assertEqual(self.bot.messages_from_bot[0].text, HELP)
+
+        answers = self.run_bot_requests(["/help"])
+
+        self.assertEqual(len(answers), 1)
+        self.assertEqual(answers[0].text, HELP)
 
     def test_random(self) -> None:
         """Проверка ответов для команды /random"""
         # проверяем ответ на "/random"
 
-        self.assertTrue(
-            self.bot.messages_from_bot[1].text.startswith("Задача")
-        )
-        self.assertTrue(
-            self.bot.messages_from_bot[1].text.endswith("добавлена на сегодня")
-        )
+        answers = self.run_bot_requests(["/random"])
+
+        self.assertEqual(len(answers), 1)
+        self.assertTrue(answers[0].text.startswith("Задача"))
+        self.assertTrue(answers[0].text.endswith("добавлена на сегодня"))
 
     def test_add(self) -> None:
         """Проверка ответов для команды /add"""
-        # проверяем ответ на "/add сегодня тестовая задача"
+
+        answers = self.run_bot_requests(["/add сегодня тестовая задача"])
+
+        self.assertEqual(len(answers), 1)
         self.assertEqual(
-            self.bot.messages_from_bot[2].text,
+            answers[0].text,
             "Задача тестовая задача добавлена на дату сегодня",
         )
 
     def test_show(self) -> None:
         """Проверка ответов для команды /show"""
 
-        # проверяем ответ на "/show сегодня"
-        # первой записью будет рандомная задача из теста /random
-
-        self.assertTrue(
-            len(self.bot.messages_from_bot[3].text.splitlines()),
-            2,
+        answers = self.run_bot_requests(
+            [
+                "/add сегодня тестовая задача",
+                "/show сегодня",
+                "/show такой_даты_нет",
+            ]
         )
+
+        self.assertEqual(len(answers), 3)
 
         self.assertEqual(
-            self.bot.messages_from_bot[3].text.splitlines()[-1],
-            "[ ] тестовая задача",
+            answers[1].text.splitlines()[-1], "[ ] тестовая задача"
         )
 
-        # проверяем ответ на "/show завтра"
-        self.assertTrue(
-            len(self.bot.messages_from_bot[3].text.splitlines()),
-            1,
-        )
-        self.assertEqual(
-            self.bot.messages_from_bot[4].text.splitlines()[0],
-            "Такой даты нет",
-        )
+        self.assertEqual(answers[2].text.splitlines()[-1], "Такой даты нет")
 
 
 if __name__ == "__main__":
