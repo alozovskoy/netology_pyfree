@@ -84,6 +84,11 @@ def task1(token: str) -> None:
     def show(message):
         dates = list(map(str.lower, message.text.split()[1:]))
 
+        if not dates:
+            bot.send_message(
+                message.chat.id, "Необходимо передать как минимум одну дату"
+            )
+            return
         tasks = []
 
         for date in dates:

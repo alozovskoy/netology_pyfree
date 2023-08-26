@@ -100,10 +100,11 @@ class TestLesson5Task1(unittest.TestCase):
                 "/show сегодня",
                 "/show сегодня завтра",
                 "/show такой_даты_нет",
+                "/show",
             ]
         )
 
-        self.assertEqual(len(answers), 5)
+        self.assertEqual(len(answers), 6)
 
         self.assertEqual(
             answers[2].text.splitlines()[-1], "[ ] тестовая задача"
@@ -117,6 +118,10 @@ class TestLesson5Task1(unittest.TestCase):
         )
 
         self.assertEqual(answers[4].text.splitlines()[-1], "Такой даты нет")
+        self.assertEqual(
+            answers[5].text.splitlines()[-1],
+            "Необходимо передать как минимум одну дату",
+        )
 
 
 if __name__ == "__main__":
