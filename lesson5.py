@@ -1,11 +1,13 @@
 import dataclasses
+import json
 import random
 import sys
+import typing
 
 import telebot
 
 
-def task1(token: str) -> None:
+def task1(token: str, tasks_file_name: typing.Optional[str] = None) -> None:
     """orginal:
     https://github.com/netology-code/pyfree-homeworks/blob/main/code/todobot.py
 
@@ -34,7 +36,33 @@ def task1(token: str) -> None:
         task: str
         category: typing.Optional[str] = None
 
+    class TodoTaskJSONEncoder(json.JSONEncoder):
+        def default(self, o):
+            if dataclasses.is_dataclass(o):
+                return dataclasses.asdict(o)
+            return super().default(o)
+
+    class TodoTaskJSONDecoder(json.JSONDecoder):
+        def __init__(self, *args, **kwargs):
+            json.JSONDecoder.__init__(
+                self, object_hook=self.object_hook, *args, **kwargs
+            )
+
+        def object_hook(self, dct):
+            if set(dct.keys()) == {"task", "category"}:
+                return TodoTask(**dct)
+
+            return dct
+
     todos: typing.Dict[str, typing.List[TodoTask]] = dict()
+
+    if tasks_file_name:
+        try:
+            with open(tasks_file_name, "r") as tasks_file:
+                json_data = json.load(tasks_file, cls=TodoTaskJSONDecoder)
+                todos = json_data
+        except FileNotFoundError:
+            pass
 
     HELP = "\n".join(
         [
@@ -66,6 +94,10 @@ def task1(token: str) -> None:
             todos[date] = []
 
         todos[date].append(TodoTask(task=task, category=category))
+
+        if tasks_file_name:
+            with open(tasks_file_name, "w") as tasks_file:
+                json.dump(todos, tasks_file, cls=TodoTaskJSONEncoder)
 
     @bot.message_handler(commands=["help"])
     def help(message):

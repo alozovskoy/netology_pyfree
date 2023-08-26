@@ -2,6 +2,7 @@ import dataclasses
 import typing
 import unittest
 import unittest.mock
+import uuid
 
 import lesson5
 import misc
@@ -26,14 +27,16 @@ class TestLesson5Task1(unittest.TestCase):
             self.addCleanup(patch.stop)
 
     def run_bot_requests(
-        self, messages: typing.Iterable[str]
+        self,
+        messages: typing.Iterable[str],
+        tasks_file_name: typing.Optional[str] = None,
     ) -> typing.Tuple[misc.TelegramBot.SendedMessage, ...]:
         self.bot.messages_to_bot = [
             misc.TelegramBot.TelegramMessage(text=i) for i in messages
         ]
         self.bot.clear_messages_from_bot()
 
-        lesson5.task1(token="")
+        lesson5.task1(token="", tasks_file_name=tasks_file_name)
 
         return self.bot.messages_from_bot
 
@@ -126,6 +129,36 @@ class TestLesson5Task1(unittest.TestCase):
         self.assertEqual(
             answers[7].text.splitlines()[-1],
             "[ ] тестовая задача @тестовая категория",
+        )
+
+    def test_store_tasks_in_file(self) -> None:
+        """Проверка сохранения задач в файле"""
+
+        # проверяем что если файл не указан таски между запусками
+        # не сохраняются
+
+        self.run_bot_requests(
+            ["/add сегодня проверка сохранения заданий в файл"]
+        )
+        answers = self.run_bot_requests(["/show сегодня"])
+
+        self.assertEqual(len(answers), 1)
+        self.assertTrue(answers[0].text, "Такой даты нет")
+
+        # проверяем что при указании файла задачи в него сохраняются
+        tasks_file_name = f"/tmp/{uuid.uuid4().hex}.json"
+
+        self.run_bot_requests(
+            ["/add сегодня проверка сохранения заданий в файл"],
+            tasks_file_name=tasks_file_name,
+        )
+        answers = self.run_bot_requests(
+            ["/show сегодня"], tasks_file_name=tasks_file_name
+        )
+
+        self.assertEqual(len(answers), 1)
+        self.assertTrue(
+            answers[0].text, "[ ] проверка сохранения заданий в файл"
         )
 
 
