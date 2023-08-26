@@ -61,7 +61,12 @@ def task1(token: str) -> None:
 
     @bot.message_handler(commands=["add"])
     def add(message):
-        _, date, tail = message.text.split(maxsplit=2)
+        try:
+            _, date, tail = message.text.split(maxsplit=2)
+        except ValueError:
+            bot.send_message(message.chat.id, "Команда составлена некорректно")
+            return
+
         task = " ".join([tail])
 
         if len(task) < 3:

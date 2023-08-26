@@ -72,10 +72,11 @@ class TestLesson5Task1(unittest.TestCase):
             [
                 "/add сегодня тестовая задача",
                 "/add сегодня A",
+                "/add сегодня",
             ]
         )
 
-        self.assertEqual(len(answers), 2)
+        self.assertEqual(len(answers), 3)
         self.assertEqual(
             answers[0].text,
             "Задача тестовая задача добавлена на дату сегодня",
@@ -83,6 +84,10 @@ class TestLesson5Task1(unittest.TestCase):
         self.assertEqual(
             answers[1].text,
             "Задача не может быть короче трех символов",
+        )
+        self.assertEqual(
+            answers[2].text,
+            "Команда составлена некорректно",
         )
 
     def test_show(self) -> None:
