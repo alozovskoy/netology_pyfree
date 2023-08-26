@@ -68,12 +68,21 @@ class TestLesson5Task1(unittest.TestCase):
     def test_add(self) -> None:
         """Проверка ответов для команды /add"""
 
-        answers = self.run_bot_requests(["/add сегодня тестовая задача"])
+        answers = self.run_bot_requests(
+            [
+                "/add сегодня тестовая задача",
+                "/add сегодня A",
+            ]
+        )
 
-        self.assertEqual(len(answers), 1)
+        self.assertEqual(len(answers), 2)
         self.assertEqual(
             answers[0].text,
             "Задача тестовая задача добавлена на дату сегодня",
+        )
+        self.assertEqual(
+            answers[1].text,
+            "Задача не может быть короче трех символов",
         )
 
     def test_show(self) -> None:

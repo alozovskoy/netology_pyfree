@@ -63,6 +63,13 @@ def task1(token: str) -> None:
     def add(message):
         _, date, tail = message.text.split(maxsplit=2)
         task = " ".join([tail])
+
+        if len(task) < 3:
+            bot.send_message(
+                message.chat.id, "Задача не может быть короче трех символов"
+            )
+            return
+
         add_todo(date, task)
         bot.send_message(
             message.chat.id, f"Задача {task} добавлена на дату {date}"
