@@ -194,7 +194,10 @@ class TelegramBot:
         text: str
 
     def __init__(
-        self, messages_to_bot: typing.Iterable[TelegramMessage]
+        self,
+        messages_to_bot: typing.Optional[
+            typing.Iterable[TelegramMessage]
+        ] = None,
     ) -> None:
         """Создание и наполнение необходимых структур
 
@@ -215,12 +218,49 @@ class TelegramBot:
         ] = {}
 
         # Сообщения, которые нужно "отправить" боту
-        self._messages_to_bot: typing.List[TelegramBot.TelegramMessage] = list(
-            messages_to_bot
-        )
+        self._messages_to_bot: typing.List[TelegramBot.TelegramMessage] = []
+
+        if messages_to_bot:
+            self._messages_to_bot.extend(list(messages_to_bot))
 
         # Сообщения, которые "отправляет" бот в ответ
         self._messages_from_bot: typing.List[TelegramBot.SendedMessage] = []
+
+    @property
+    def messages_to_bot(self) -> typing.Tuple["TelegramBot.TelegramMessage"]:
+        """Сообщения, которые нужно "отправить" боту
+
+        Args:
+
+        Returns:
+            typing.Tuple["TelegramBot.TelegramMessage"]: Список сообщений
+        """
+        return tuple(self._messages_to_bot)
+
+    @messages_to_bot.setter
+    def messages_to_bot(
+        self, messages: typing.Iterable["TelegramBot.TelegramMessage"]
+    ) -> None:
+        """Заменить список сообщений для "отправки" к боту переданным списком
+
+        Args:
+            messages (typing.Iterable["TelegramBot.TelegramMessage"]): Список
+                сообщений
+
+        Returns:
+            None:
+        """
+        self._messages_to_bot = list(messages)
+
+    def clear_messages_from_bot(self) -> None:
+        """Очистить список сообщений-ответов от бота
+
+        Args:
+
+        Returns:
+            None:
+        """
+        self._messages_from_bot = []
 
     @property
     def messages_from_bot(
