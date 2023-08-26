@@ -96,18 +96,27 @@ class TestLesson5Task1(unittest.TestCase):
         answers = self.run_bot_requests(
             [
                 "/add сегодня тестовая задача",
+                "/add завтра завтрашняя тестовая задача",
                 "/show сегодня",
+                "/show сегодня завтра",
                 "/show такой_даты_нет",
             ]
         )
 
-        self.assertEqual(len(answers), 3)
+        self.assertEqual(len(answers), 5)
 
         self.assertEqual(
-            answers[1].text.splitlines()[-1], "[ ] тестовая задача"
+            answers[2].text.splitlines()[-1], "[ ] тестовая задача"
+        )
+        self.assertEqual(
+            answers[3].text.splitlines(),
+            [
+                "[ ] тестовая задача",
+                "[ ] завтрашняя тестовая задача",
+            ],
         )
 
-        self.assertEqual(answers[2].text.splitlines()[-1], "Такой даты нет")
+        self.assertEqual(answers[4].text.splitlines()[-1], "Такой даты нет")
 
 
 if __name__ == "__main__":

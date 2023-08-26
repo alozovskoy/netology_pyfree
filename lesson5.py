@@ -82,13 +82,20 @@ def task1(token: str) -> None:
 
     @bot.message_handler(commands=["show"])
     def show(message):
-        date = message.text.split()[1].lower()
-        if date in todos:
-            tasks = ""
-            for task in todos[date]:
-                tasks += f"[ ] {task}\n"
+        dates = list(map(str.lower, message.text.split()[1:]))
+
+        tasks = []
+
+        for date in dates:
+            if date in todos:
+                for task in todos[date]:
+                    tasks.append(f"[ ] {task}")
+
+        if tasks:
+            tasks = "\n".join(tasks)
         else:
             tasks = "Такой даты нет"
+
         bot.send_message(message.chat.id, tasks)
 
     bot.polling(none_stop=True)
