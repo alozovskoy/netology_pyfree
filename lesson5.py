@@ -32,17 +32,17 @@ def task1(token: str, tasks_file_name: typing.Optional[str] = None) -> None:
     ]
 
     @dataclasses.dataclass
-    class TodoTask:
+    class Task:
         task: str
         category: typing.Optional[str] = None
 
-    class TodoTaskJSONEncoder(json.JSONEncoder):
+    class TaskJSONEncoder(json.JSONEncoder):
         def default(self, o):
             if dataclasses.is_dataclass(o):
                 return dataclasses.asdict(o)
             return super().default(o)
 
-    class TodoTaskJSONDecoder(json.JSONDecoder):
+    class TaskJSONDecoder(json.JSONDecoder):
         def __init__(self, *args, **kwargs):
             json.JSONDecoder.__init__(
                 self, object_hook=self.object_hook, *args, **kwargs
@@ -50,17 +50,17 @@ def task1(token: str, tasks_file_name: typing.Optional[str] = None) -> None:
 
         def object_hook(self, dct):
             if set(dct.keys()) == {"task", "category"}:
-                return TodoTask(**dct)
+                return Task(**dct)
 
             return dct
 
-    todos: typing.Dict[str, typing.List[TodoTask]] = dict()
+    tasks: typing.Dict[str, typing.List[Task]] = dict()
 
     if tasks_file_name:
         try:
             with open(tasks_file_name, "r") as tasks_file:
-                json_data = json.load(tasks_file, cls=TodoTaskJSONDecoder)
-                todos = json_data
+                json_data = json.load(tasks_file, cls=TaskJSONDecoder)
+                tasks = json_data
         except FileNotFoundError:
             pass
 
@@ -77,7 +77,7 @@ def task1(token: str, tasks_file_name: typing.Optional[str] = None) -> None:
         ]
     )
 
-    def add_todo(
+    def add_task(
         date: str, task: str, category: typing.Optional[str] = None
     ) -> None:
         """Добавить задачу в список дел
@@ -93,14 +93,14 @@ def task1(token: str, tasks_file_name: typing.Optional[str] = None) -> None:
 
         date = date.lower()
 
-        if date not in todos:
-            todos[date] = []
+        if date not in tasks:
+            tasks[date] = []
 
-        todos[date].append(TodoTask(task=task, category=category))
+        tasks[date].append(Task(task=task, category=category))
 
         if tasks_file_name:
             with open(tasks_file_name, "w") as tasks_file:
-                json.dump(todos, tasks_file, cls=TodoTaskJSONEncoder)
+                json.dump(tasks, tasks_file, cls=TaskJSONEncoder)
 
     @bot.message_handler(commands=["help"])
     def help(message):
@@ -109,7 +109,7 @@ def task1(token: str, tasks_file_name: typing.Optional[str] = None) -> None:
     @bot.message_handler(commands=["random"])
     def random_(message):
         task = random.choice(RANDOM_TASKS)
-        add_todo("сегодня", task)
+        add_task("сегодня", task)
         bot.send_message(
             message.chat.id, f"Задача {task} добавлена на сегодня"
         )
@@ -136,7 +136,7 @@ def task1(token: str, tasks_file_name: typing.Optional[str] = None) -> None:
         else:
             category = None
 
-        add_todo(date, task, category)
+        add_task(date, task, category)
         bot.send_message(
             message.chat.id, f"Задача {task} добавлена на дату {date}"
         )
@@ -150,22 +150,22 @@ def task1(token: str, tasks_file_name: typing.Optional[str] = None) -> None:
                 message.chat.id, "Необходимо передать как минимум одну дату"
             )
             return
-        tasks = []
+        tasks_at_dates = []
 
         for date in dates:
-            if date in todos:
-                for task in todos[date]:
+            if date in tasks:
+                for task in tasks[date]:
                     _task = f"[ ] {task.task}"
                     if task.category:
                         _task += f" @{task.category}"
-                    tasks.append(_task)
+                    tasks_at_dates.append(_task)
 
-        if tasks:
-            tasks = "\n".join(tasks)
+        if tasks_at_dates:
+            tasks_at_dates = "\n".join(tasks_at_dates)
         else:
-            tasks = "Такой даты нет"
+            tasks_at_dates = "Такой даты нет"
 
-        bot.send_message(message.chat.id, tasks)
+        bot.send_message(message.chat.id, tasks_at_dates)
 
     bot.polling(none_stop=True)
 
