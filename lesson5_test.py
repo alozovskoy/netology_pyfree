@@ -1,4 +1,5 @@
 import dataclasses
+import os
 import typing
 import unittest
 import unittest.mock
@@ -163,6 +164,8 @@ class TestLesson5Task1(unittest.TestCase):
         self.assertTrue(
             answers[0].text, "[ ] проверка сохранения заданий в файл"
         )
+
+        os.remove(tasks_file_name)
 
 
 if __name__ == "__main__":
